@@ -1,104 +1,154 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
-    <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-xl">
-        <div class="mb-6 flex items-center gap-3">
-            <span class="inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-200 bg-slate-900 text-white">
-                <i class="fa-solid fa-note-sticky text-xl"></i>
-            </span>
-            <div>
-                <h1 class="text-2xl font-bold">Form Aspirasi Siswa</h1>
-                <p class="text-sm text-slate-600">Laporkan kondisi sarana sekolah secara cepat dan rapi.</p>
-            </div>
+<div class="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
+    <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-10">
+        <div class="mb-8">
+            <h1 class="text-2xl font-bold text-slate-900">Formulir Pelaporan</h1>
+            <p class="mt-2 text-sm text-slate-500">
+                Sampaikan keluhan atau saranmu di bawah ini.
+            </p>
         </div>
 
-        <form class="space-y-4" action="{{ route('aspirasi.store') }}" method="post">
+        <form action="{{ route('aspirasi.store') }}" method="post" enctype="multipart/form-data" class="space-y-6">
             @csrf
-            <div class="grid gap-4 md:grid-cols-2">
-                <div>
-                    <label class="text-sm font-semibold text-slate-700" for="nis">NIS</label>
-                    <input class="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-200" type="text" id="nis" name="nis" value="{{ old('nis') }}" placeholder="Contoh: 231234" required>
-                    @error('nis')
-                        <p class="mt-2 text-sm text-rose-500">{{ $message }}</p>
+            
+            @error('error')
+                <div class="rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-800">
+                    {{ $message }}
+                </div>
+            @enderror
+            
+            <div class="grid gap-6 md:grid-cols-2">
+                <!-- Tipe Select -->
+                <div class="space-y-2">
+                    <label class="text-sm font-semibold text-slate-900" for="tipe">
+                        Jenis Laporan <span class="text-red-500">*</span>
+                    </label>
+                    <select class="block w-full rounded-xl border border-slate-200 bg-slate-50 py-3 px-4 text-sm outline-none focus:border-indigo-600 focus:bg-white" id="tipe" name="tipe" required onchange="toggleLokasi()">
+                        <option value="Pengaduan" @selected(old('tipe') == 'Pengaduan')>Pengaduan (Masalah)</option>
+                        <option value="Aspirasi" @selected(old('tipe') == 'Aspirasi')>Aspirasi (Saran)</option>
+                    </select>
+                    @error('tipe')
+                        <p class="text-xs font-bold text-red-500">{{ $message }}</p>
                     @enderror
                 </div>
-                <div>
-                    <label class="text-sm font-semibold text-slate-700" for="kelas">Kelas</label>
-                    <input class="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-200" type="text" id="kelas" name="kelas" value="{{ old('kelas') }}" placeholder="Contoh: XII RPL 1" required>
-                    @error('kelas')
-                        <p class="mt-2 text-sm text-rose-500">{{ $message }}</p>
+
+                <!-- Kategori Select -->
+                <div class="space-y-2">
+                    <label class="text-sm font-semibold text-slate-900" for="id_kategori">
+                        Kategori <span class="text-red-500">*</span>
+                    </label>
+                    <select class="block w-full rounded-xl border border-slate-200 bg-slate-50 py-3 px-4 text-sm outline-none focus:border-indigo-600 focus:bg-white" id="id_kategori" name="id_kategori" required>
+                        <option value="" disabled selected>Pilih Kategori</option>
+                        @foreach ($kategori as $item)
+                            <option value="{{ $item->id_kategori }}" @selected(old('id_kategori') == $item->id_kategori)>
+                                {{ $item->ket_kategori }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('id_kategori')
+                        <p class="text-xs font-bold text-red-500">{{ $message }}</p>
                     @enderror
                 </div>
             </div>
 
-            <div>
-                <label class="text-sm font-semibold text-slate-700" for="id_kategori">Kategori</label>
-                <select class="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-200" id="id_kategori" name="id_kategori" required>
-                    <option value="" disabled selected>Pilih kategori</option>
-                    @foreach ($kategori as $item)
-                        <option value="{{ $item->id_kategori }}" @selected(old('id_kategori') == $item->id_kategori)>
-                            {{ $item->ket_kategori }}
-                        </option>
-                    @endforeach
-                </select>
-                @error('id_kategori')
-                    <p class="mt-2 text-sm text-rose-500">{{ $message }}</p>
-                @enderror
-            </div>
-
-            <div>
-                <label class="text-sm font-semibold text-slate-700" for="lokasi">Lokasi</label>
-                <input class="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-200" type="text" id="lokasi" name="lokasi" value="{{ old('lokasi') }}" placeholder="Contoh: Lab Komputer" required>
+            <!-- Lokasi Input -->
+            <div class="space-y-2" id="lokasi-container">
+                <label class="text-sm font-semibold text-slate-900" for="lokasi">
+                    Lokasi <span class="text-red-500" id="lokasi-required">*</span>
+                </label>
+                <input class="block w-full rounded-xl border border-slate-200 bg-slate-50 py-3 px-4 text-sm outline-none focus:border-indigo-600 focus:bg-white" type="text" id="lokasi" name="lokasi" value="{{ old('lokasi') }}" placeholder="Contoh: Gedung A, Ruang Kelas X-RPL">
                 @error('lokasi')
-                    <p class="mt-2 text-sm text-rose-500">{{ $message }}</p>
+                    <p class="text-xs font-bold text-red-500">{{ $message }}</p>
                 @enderror
             </div>
 
-            <div>
-                <label class="text-sm font-semibold text-slate-700" for="ket">Keterangan Singkat</label>
-                <textarea class="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-200" id="ket" name="ket" rows="4" placeholder="Jelaskan masalahnya" required>{{ old('ket') }}</textarea>
+            <!-- Keterangan Textarea -->
+            <div class="space-y-2">
+                <label class="text-sm font-semibold text-slate-900" for="ket" id="ket-label">
+                    Detail Laporan <span class="text-red-500">*</span>
+                </label>
+                <textarea class="block w-full rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm outline-none focus:border-indigo-600 focus:bg-white" id="ket" name="ket" rows="4" placeholder="Jelaskan secara rinci..." required>{{ old('ket') }}</textarea>
                 @error('ket')
-                    <p class="mt-2 text-sm text-rose-500">{{ $message }}</p>
+                    <p class="text-xs font-bold text-red-500">{{ $message }}</p>
                 @enderror
             </div>
 
-            <button class="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-slate-300/40 transition hover:-translate-y-0.5 hover:bg-black" type="submit">
-                <i class="fa-solid fa-paper-plane"></i>
-                Kirim Aspirasi
-            </button>
-        </form>
-    </section>
-
-    <aside class="space-y-6">
-        <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-xl">
-            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Alur Repschool</p>
-            <h2 class="mt-3 text-2xl font-semibold">Mulai dari laporan siswa, berakhir pada perbaikan nyata.</h2>
-            <p class="mt-3 text-sm text-slate-600">Setiap aspirasi masuk otomatis tercatat dengan status Menunggu, lalu admin memberikan tindak lanjut.</p>
-            <div class="mt-6 grid gap-3 text-sm">
-                <div class="flex items-center gap-3 rounded-2xl border border-slate-200 px-4 py-3">
-                    <i class="fa-solid fa-clipboard-list text-slate-600"></i>
-                    <span>Input aspirasi oleh siswa</span>
+            <!-- Foto Input -->
+            <div class="space-y-2">
+                <label class="text-sm font-semibold text-slate-900" for="foto">
+                    Lampiran Foto <span class="text-xs font-normal text-slate-400">(Opsional, Max 2MB)</span>
+                </label>
+                <input type="file" id="foto" name="foto" accept="image/*" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" onchange="previewImage(this)">
+                
+                <div id="image-preview" class="mt-4 hidden">
+                    <div class="relative inline-block">
+                        <img src="" alt="Preview" class="h-32 w-auto rounded-lg border border-slate-200 object-cover">
+                        <button type="button" onclick="clearPreview()" class="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-red-600 text-white text-xs">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
                 </div>
-                <div class="flex items-center gap-3 rounded-2xl border border-slate-200 px-4 py-3">
-                    <i class="fa-solid fa-gear text-slate-600"></i>
-                    <span>Admin memproses dan memberi umpan balik</span>
-                </div>
-                <div class="flex items-center gap-3 rounded-2xl border border-slate-200 px-4 py-3">
-                    <i class="fa-solid fa-check text-slate-600"></i>
-                    <span>Status selesai dilaporkan kembali</span>
-                </div>
+                @error('foto')
+                    <p class="text-xs font-bold text-red-500">{{ $message }}</p>
+                @enderror
             </div>
-        </div>
 
-        <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-xl">
-            <h3 class="text-lg font-semibold">Butuh cek status?</h3>
-            <p class="mt-2 text-sm text-slate-600">Gunakan menu Cek Status untuk melihat progres aspirasi kamu.</p>
-            <a class="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-slate-900" href="{{ route('aspirasi.status') }}">
-                Lihat status aspirasi
-                <i class="fa-solid fa-arrow-right"></i>
-            </a>
-        </div>
-    </aside>
+            <div class="pt-4">
+                <button class="w-full rounded-xl bg-indigo-600 px-6 py-3.5 text-sm font-bold text-white transition hover:bg-indigo-700 active:scale-95" type="submit">
+                    Kirim Laporan
+                </button>
+            </div>
+        </form>
+    </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    function toggleLokasi() {
+        const tipe = document.getElementById('tipe').value;
+        const lokasiContainer = document.getElementById('lokasi-container');
+        const lokasiInput = document.getElementById('lokasi');
+        const lokasiRequired = document.getElementById('lokasi-required');
+        const ketLabel = document.getElementById('ket-label');
+
+        if (tipe === 'Aspirasi') {
+            lokasiContainer.classList.add('hidden');
+            lokasiInput.disabled = true;
+            lokasiInput.required = false;
+            ketLabel.innerHTML = 'Isi Aspirasi <span class="text-red-500">*</span>';
+        } else {
+            lokasiContainer.classList.remove('hidden');
+            lokasiInput.disabled = false;
+            lokasiInput.required = true;
+            ketLabel.innerHTML = 'Detail Laporan <span class="text-red-500">*</span>';
+        }
+    }
+
+    function previewImage(input) {
+        const preview = document.getElementById('image-preview');
+        const previewImg = preview.querySelector('img');
+        
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewImg.src = e.target.result;
+                preview.classList.remove('hidden');
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function clearPreview() {
+        const input = document.getElementById('foto');
+        const preview = document.getElementById('image-preview');
+        
+        input.value = '';
+        preview.classList.add('hidden');
+    }
+
+    document.addEventListener('DOMContentLoaded', toggleLokasi);
+</script>
+@endpush

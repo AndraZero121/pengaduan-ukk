@@ -3,10 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Aspirasi;
+use App\Services\ProfanityFilter;
 use Illuminate\Http\Request;
 
 class AspirasiController extends Controller
 {
+    public function __construct(protected ProfanityFilter $filter) {}
+
     public function index(Request $request)
     {
         $query = Aspirasi::query()->with(['inputAspirasi.siswa', 'kategori']);
@@ -17,6 +20,13 @@ class AspirasiController extends Controller
 
         if ($request->filled('id_kategori')) {
             $query->where('id_kategori', $request->integer('id_kategori'));
+        }
+
+        if ($request->filled('tipe')) {
+            $tipe = $request->string('tipe')->toString();
+            $query->whereHas('inputAspirasi', function ($builder) use ($tipe): void {
+                $builder->where('tipe', $tipe);
+            });
         }
 
         if ($request->filled('nis')) {
@@ -60,6 +70,10 @@ class AspirasiController extends Controller
             'feedback' => ['nullable', 'string', 'max:255'],
             'id_kategori' => ['sometimes', 'integer', 'exists:kategori,id_kategori'],
         ]);
+
+        if (isset($data['feedback'])) {
+            $data['feedback'] = $this->filter->filter($data['feedback']);
+        }
 
         $aspirasi->update($data);
 

@@ -1,95 +1,66 @@
 @extends('layouts.app')
 
 @section('content')
-<section class="space-y-6">
-    <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-xl">
-        <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-            <div>
-                <h1 class="text-2xl font-bold">Panel Admin Aspirasi</h1>
-                <p class="text-sm text-slate-600">Kelola status dan umpan balik pengaduan sarana sekolah.</p>
-            </div>
-            <form class="grid gap-3 sm:grid-cols-3" method="get" action="{{ route('admin.aspirasi.index') }}">
-                <input class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-200" type="text" name="nis" placeholder="Filter NIS" value="{{ request('nis') }}">
-                <select class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-200" name="id_kategori">
-                    <option value="">Semua Kategori</option>
-                    @foreach ($kategori as $item)
-                        <option value="{{ $item->id_kategori }}" @selected(request('id_kategori') == $item->id_kategori)>
-                            {{ $item->ket_kategori }}
-                        </option>
-                    @endforeach
-                </select>
-                <select class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-200" name="status">
-                    <option value="">Semua Status</option>
-                    <option value="Menunggu" @selected(request('status') === 'Menunggu')>Menunggu</option>
-                    <option value="Proses" @selected(request('status') === 'Proses')>Proses</option>
-                    <option value="Selesai" @selected(request('status') === 'Selesai')>Selesai</option>
-                </select>
-                <button class="sm:col-span-3 inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-slate-300/40 transition hover:-translate-y-0.5 hover:bg-black" type="submit">
-                    <i class="fa-solid fa-filter"></i>
-                    Terapkan Filter
-                </button>
-            </form>
-        </div>
+<div class="px-4 py-10">
+    <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <h1 class="text-2xl font-bold">Dashboard Admin</h1>
     </div>
 
-    <div class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl">
-        <div class="overflow-x-auto">
-            <table class="min-w-full text-left text-sm">
-                <thead class="bg-slate-900 text-white">
-                    <tr>
-                        <th class="px-4 py-3">ID</th>
-                        <th class="px-4 py-3">Siswa</th>
-                        <th class="px-4 py-3">Kategori</th>
-                        <th class="px-4 py-3">Lokasi &amp; Ket</th>
-                        <th class="px-4 py-3">Status</th>
-                        <th class="px-4 py-3">Feedback</th>
-                        <th class="px-4 py-3">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100">
-                    @forelse ($aspirasi as $item)
-                        <tr class="bg-white">
-                            <td class="px-4 py-4 text-slate-500">#{{ $item->id_aspirasi }}</td>
-                            <td class="px-4 py-4">
-                                <p class="font-semibold">{{ $item->inputAspirasi?->siswa?->nis ?? '-' }}</p>
-                                <p class="text-xs text-slate-500">{{ $item->inputAspirasi?->siswa?->kelas ?? '-' }}</p>
-                            </td>
-                            <td class="px-4 py-4">{{ $item->kategori?->ket_kategori ?? '-' }}</td>
-                            <td class="px-4 py-4">
-                                <p class="font-semibold">{{ $item->inputAspirasi?->lokasi ?? '-' }}</p>
-                                <p class="text-xs text-slate-500">{{ $item->inputAspirasi?->ket ?? '-' }}</p>
-                            </td>
-                            <td class="px-4 py-4">
-                                <span class="inline-flex rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700">
-                                    {{ $item->status }}
-                                </span>
-                            </td>
-                            <td class="px-4 py-4">{{ $item->feedback ?? '-' }}</td>
-                            <td class="px-4 py-4">
-                                <form class="flex flex-col gap-3" method="post" action="{{ route('admin.aspirasi.update', $item) }}">
-                                    @csrf
-                                    @method('patch')
-                                    <select class="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-200" name="status" required>
-                                        <option value="Menunggu" @selected($item->status === 'Menunggu')>Menunggu</option>
-                                        <option value="Proses" @selected($item->status === 'Proses')>Proses</option>
-                                        <option value="Selesai" @selected($item->status === 'Selesai')>Selesai</option>
-                                    </select>
-                                    <input class="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-200" type="text" name="feedback" value="{{ $item->feedback }}" placeholder="Tulis feedback singkat">
-                                    <button class="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-black" type="submit">
-                                        <i class="fa-solid fa-floppy-disk"></i>
-                                        Simpan
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td class="px-4 py-10 text-center text-slate-500" colspan="7">Belum ada aspirasi masuk.</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
+    <!-- Filter Form -->
+    <div class="mb-6 bg-white p-4 border border-gray-200 rounded">
+        <form action="{{ route('admin.aspirasi.index') }}" method="GET" id="filter-form" class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5">
+            <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Cari</label>
+                <input type="text" name="search" value="{{ request('search') }}" class="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:border-indigo-500 focus:outline-none" placeholder="NIS / Nama">
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Status</label>
+                <select name="status" class="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:border-indigo-500 focus:outline-none">
+                    <option value="">Semua</option>
+                    <option value="Menunggu" @selected(request('status') == 'Menunggu')>Menunggu</option>
+                    <option value="Proses" @selected(request('status') == 'Proses')>Proses</option>
+                    <option value="Selesai" @selected(request('status') == 'Selesai')>Selesai</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Tipe</label>
+                <select name="tipe" class="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:border-indigo-500 focus:outline-none">
+                    <option value="">Semua</option>
+                    <option value="Pengaduan" @selected(request('tipe') == 'Pengaduan')>Pengaduan</option>
+                    <option value="Aspirasi" @selected(request('tipe') == 'Aspirasi')>Aspirasi</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Kategori</label>
+                <select name="id_kategori" class="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:border-indigo-500 focus:outline-none">
+                    <option value="">Semua</option>
+                    @foreach($kategori as $kat)
+                        <option value="{{ $kat->id_kategori }}" @selected(request('id_kategori') == $kat->id_kategori)>{{ $kat->ket_kategori }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="flex items-end">
+                <button type="submit" class="w-full px-4 py-2 text-sm font-semibold text-white bg-indigo-600 rounded hover:bg-indigo-700">Filter</button>
+            </div>
+        </form>
     </div>
-</section>
+
+    <!-- Table Container -->
+    <div class="bg-white border border-gray-200 rounded overflow-hidden">
+        <table class="w-full text-left text-sm">
+            <thead class="bg-gray-50 border-b border-gray-200">
+                <tr>
+                    <th class="px-4 py-3 font-medium text-gray-500 w-32">Info</th>
+                    <th class="px-4 py-3 font-medium text-gray-500 w-48">Pelapor</th>
+                    <th class="px-4 py-3 font-medium text-gray-500 w-20">Foto</th>
+                    <th class="px-4 py-3 font-medium text-gray-500">Detail Laporan</th>
+                    <th class="px-4 py-3 font-medium text-gray-500 w-64">Tindak Lanjut</th>
+                </tr>
+            </thead>
+            <tbody id="admin-table-body" class="divide-y divide-gray-100">
+                @include('repschool._admin_table', ['aspirasi' => $aspirasi])
+            </tbody>
+        </table>
+    </div>
+</div>
 @endsection

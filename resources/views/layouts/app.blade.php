@@ -3,69 +3,86 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Repschool - Pengaduan Sarana Sekolah</title>
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-
+    <title>Sistem Pengaduan SMK Palapa</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="min-h-screen bg-white text-slate-900" style="font-family: 'Space Grotesk', sans-serif;">
-    <div class="relative">
-        <header class="border-b border-slate-200 bg-white">
-            <div class="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-6 md:flex-row md:items-center md:justify-between">
-                <div>
-                    <div class="flex items-center gap-3">
-                        <span class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-slate-900 text-white">
-                            <i class="fa-solid fa-bullhorn"></i>
-                        </span>
-                        <div>
-                            <p class="text-xl font-semibold tracking-tight">Repschool</p>
-                            <p class="text-sm text-slate-600">Pengaduan Sarana Sekolah</p>
-                        </div>
-                    </div>
+<body class="bg-gray-50 text-gray-900 min-h-screen flex flex-col font-sans">
+    <header class="bg-white border-b border-gray-100">
+        <div class="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
+            <a href="{{ route('landing') }}" class="flex items-center gap-2 font-bold text-gray-900">
+                <div class="w-8 h-8 bg-indigo-600 rounded flex items-center justify-center text-white">
+                    <i class="fa-solid fa-bullhorn text-xs"></i>
                 </div>
-                <nav class="flex flex-wrap items-center gap-3 text-sm font-medium text-slate-700">
-                    <a class="rounded-full border border-slate-200 bg-white px-4 py-2 transition hover:border-slate-900 hover:text-slate-900" href="{{ route('home') }}">
-                        <i class="fa-solid fa-pen-to-square mr-2"></i>Form Aspirasi
-                    </a>
-                    <a class="rounded-full border border-slate-200 bg-white px-4 py-2 transition hover:border-slate-900 hover:text-slate-900" href="{{ route('aspirasi.status') }}">
-                        <i class="fa-solid fa-magnifying-glass mr-2"></i>Cek Status
-                    </a>
-                    @if (session()->has('admin_id'))
-                        <a class="rounded-full border border-slate-200 bg-white px-4 py-2 transition hover:border-slate-900 hover:text-slate-900" href="{{ route('admin.aspirasi.index') }}">
-                            <i class="fa-solid fa-gear mr-2"></i>Panel Admin
-                        </a>
-                        <form action="{{ route('admin.logout') }}" method="post">
-                            @csrf
-                            <button class="rounded-full border border-slate-200 bg-slate-900 px-4 py-2 text-white transition hover:bg-black" type="submit">
-                                <i class="fa-solid fa-right-from-bracket mr-2"></i>Keluar
-                            </button>
-                        </form>
-                    @else
-                        <a class="rounded-full border border-slate-200 bg-slate-900 px-4 py-2 text-white transition hover:bg-black" href="{{ route('admin.login') }}">
-                            <i class="fa-solid fa-right-to-bracket mr-2"></i>Admin Login
-                        </a>
-                    @endif
-                </nav>
+                <span>SMK Palapa</span>
+            </a>
+            
+            <nav class="flex gap-6 items-center">
+                @auth
+                    @can('siswa')
+                        <a href="{{ route('home') }}" class="text-xs font-bold text-gray-600 hover:text-indigo-600">Buat Laporan</a>
+                        <a href="{{ route('aspirasi.status') }}" class="text-xs font-bold text-gray-600 hover:text-indigo-600">Status</a>
+                    @endcan
+                    @can('admin')
+                        <a href="{{ route('admin.aspirasi.index') }}" class="text-xs font-bold text-gray-600 hover:text-indigo-600">Admin</a>
+                    @endcan
+                    
+                    <form action="{{ route('logout') }}" method="post">
+                        @csrf
+                        <button type="submit" class="text-xs font-bold text-red-500 hover:text-red-700">Keluar</button>
+                    </form>
+                @else
+                    <a href="{{ route('login') }}" class="text-xs font-bold text-indigo-600 hover:text-indigo-800">Masuk</a>
+                @endauth
+            </nav>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-5xl mx-auto w-full">
+        @if (session('success'))
+            <div class="mx-4 mt-6 p-3 bg-green-50 text-green-700 border border-green-100 rounded text-xs font-bold">
+                {{ session('success') }}
             </div>
-        </header>
+        @endif
 
-        <main class="mx-auto max-w-6xl px-4 pb-16 pt-10">
-            @if (session('success'))
-                <div class="mb-6 rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-slate-800 shadow-sm">
-                    <i class="fa-solid fa-circle-check mr-2"></i>{{ session('success') }}
-                </div>
-            @endif
+        @yield('content')
+    </main>
 
-            @yield('content')
-        </main>
+    <footer class="bg-white border-t border-gray-100 py-8 mt-12 text-center text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+        &copy; {{ date('Y') }} SMK Palapa.
+    </footer>
 
-        <footer class="border-t border-slate-200 bg-white py-6 text-center text-sm text-slate-500">
-            Repschool &copy; {{ date('Y') }}. Sistem pengaduan sarana sekolah berbasis Laravel.
-        </footer>
+    <!-- Image Modal -->
+    <div id="imageModal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/80 p-4 backdrop-blur-sm" onclick="closeImageModal()">
+        <div class="relative max-w-4xl w-full">
+            <button class="absolute -top-10 right-0 text-white text-2xl hover:text-gray-300">&times;</button>
+            <img id="modalImage" src="" class="mx-auto max-h-[90vh] rounded-lg shadow-2xl object-contain">
+        </div>
     </div>
+
+    <script>
+        function openImageModal(src) {
+            const modal = document.getElementById('imageModal');
+            const img = document.getElementById('modalImage');
+            img.src = src;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeImageModal() {
+            const modal = document.getElementById('imageModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Close on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeImageModal();
+        });
+    </script>
+
+    @stack('scripts')
 </body>
 </html>

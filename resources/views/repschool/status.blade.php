@@ -1,56 +1,72 @@
 @extends('layouts.app')
 
 @section('content')
-<section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-xl">
-    <div class="mb-6 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-        <div>
-            <h1 class="text-2xl font-bold">Cek Status Aspirasi</h1>
-            <p class="text-sm text-slate-600">Masukkan NIS untuk melihat riwayat pengaduan.</p>
+<div class="px-4 py-10">
+    <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <h1 class="text-2xl font-bold">Status Laporan</h1>
+        
+        <div class="flex gap-2">
+            <a href="{{ route('aspirasi.status', ['view' => 'all', 'search' => $search]) }}" 
+               class="px-3 py-1.5 text-sm rounded border {{ $view === 'all' ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'bg-white border-gray-200 hover:bg-gray-50' }}">
+                Semua
+            </a>
+            <a href="{{ route('aspirasi.status', ['view' => 'mine', 'search' => $search]) }}" 
+               class="px-3 py-1.5 text-sm rounded border {{ $view === 'mine' ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'bg-white border-gray-200 hover:bg-gray-50' }}">
+                Laporan Saya
+            </a>
         </div>
-        <form class="flex flex-col gap-3 sm:flex-row" method="get" action="{{ route('aspirasi.status') }}">
-            <input class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-200" type="text" name="nis" placeholder="NIS siswa" value="{{ $nis }}">
-            <button class="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-slate-300/40 transition hover:-translate-y-0.5 hover:bg-black" type="submit">
-                <i class="fa-solid fa-magnifying-glass"></i>
-                Cari
-            </button>
-        </form>
     </div>
 
-    <div class="overflow-hidden rounded-2xl border border-slate-200">
+    <form action="{{ route('aspirasi.status') }}" method="get" id="search-form" class="mb-6">
+        <input type="hidden" name="view" value="{{ $view }}">
+        <input type="text" name="search" id="search-input" value="{{ $search }}"
+               class="w-full sm:w-64 px-3 py-2 text-sm border border-gray-300 rounded focus:border-indigo-500 focus:outline-none"
+               placeholder="Cari laporan...">
+    </form>
+
+    <div class="bg-white border border-gray-200 rounded overflow-hidden">
         <table class="w-full text-left text-sm">
-            <thead class="bg-slate-900 text-white">
+            <thead class="bg-gray-50 border-b border-gray-200">
                 <tr>
-                    <th class="px-4 py-3">Tanggal</th>
-                    <th class="px-4 py-3">Kategori</th>
-                    <th class="px-4 py-3">Lokasi</th>
-                    <th class="px-4 py-3">Keterangan</th>
-                    <th class="px-4 py-3">Status</th>
-                    <th class="px-4 py-3">Feedback</th>
+                    <th class="px-4 py-3 font-medium text-gray-500">Tanggal</th>
+                    <th class="px-4 py-3 font-medium text-gray-500">Pelapor</th>
+                    <th class="px-4 py-3 font-medium text-gray-500">Tipe & Kategori</th>
+                    <th class="px-4 py-3 font-medium text-gray-500">Foto</th>
+                    <th class="px-4 py-3 font-medium text-gray-500">Detail</th>
+                    <th class="px-4 py-3 font-medium text-gray-500">Status</th>
+                    <th class="px-4 py-3 font-medium text-gray-500">Tanggapan</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100 bg-white">
-                @forelse ($riwayat as $item)
-                    <tr class="hover:bg-slate-50">
-                        <td class="px-4 py-3 text-slate-500">{{ $item->created_at->format('d M Y') }}</td>
-                        <td class="px-4 py-3 font-medium text-slate-800">{{ $item->kategori?->ket_kategori ?? '-' }}</td>
-                        <td class="px-4 py-3">{{ $item->lokasi }}</td>
-                        <td class="px-4 py-3">{{ $item->ket }}</td>
-                        <td class="px-4 py-3">
-                            <span class="inline-flex rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700">
-                                {{ $item->aspirasi?->status ?? 'Menunggu' }}
-                            </span>
-                        </td>
-                        <td class="px-4 py-3 text-slate-500">{{ $item->aspirasi?->feedback ?? '-' }}</td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td class="px-4 py-8 text-center text-slate-500" colspan="6">
-                            Masukkan NIS untuk melihat data aspirasi.
-                        </td>
-                    </tr>
-                @endforelse
+            <tbody id="status-table-body" class="divide-y divide-gray-100">
+                @include('repschool._status_table', ['riwayat' => $riwayat, 'search' => $search])
             </tbody>
         </table>
     </div>
-</section>
+</div>
 @endsection
+
+@push('scripts')
+<script>
+    const searchInput = document.getElementById('search-input');
+    const tableBody = document.getElementById('status-table-body');
+    const view = '{{ $view }}';
+
+    let timeout = null;
+
+    searchInput.addEventListener('input', function() {
+        clearTimeout(timeout);
+        timeout = setTimeout(function() {
+            const searchValue = searchInput.value;
+            fetch(`{{ route('aspirasi.status') }}?search=${searchValue}&view=${view}`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                tableBody.innerHTML = data.html;
+            });
+        }, 500);
+    });
+</script>
+@endpush
