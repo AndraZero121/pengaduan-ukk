@@ -4,11 +4,11 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "bun x concurrently \"vite\" \"php artisan serve\" \"php artisan schedule:work\""
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.2.2",
-        "axios": "^1.14.0",
+        "axios": "^1.15.0",
         "concurrently": "^9.2.1",
         "laravel-vite-plugin": "^2.1.0",
         "tailwindcss": "^4.2.2",

@@ -15,13 +15,14 @@ class AdminAuthController extends Controller
 
     public function login(Request $request)
     {
+        // Validasi data
         $data = $request->validate([
             'username' => ['required', 'string'],
             'password' => ['required', 'string'],
         ]);
 
         $admin = Admin::query()->where('username', $data['username'])->first();
-
+         // Cek login
         if (!$admin || !Hash::check($data['password'], $admin->password)) {
             return back()->withErrors(['username' => 'Username atau password tidak sesuai.'])->onlyInput('username');
         }

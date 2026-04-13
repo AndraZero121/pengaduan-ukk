@@ -21,5 +21,23 @@ Route::middleware('auth')->group(function () {
     Route::middleware('can:admin')->group(function () {
         Route::get('/admin/aspirasi', [AdminAspirasiController::class, 'index'])->name('admin.aspirasi.index');
         Route::patch('/admin/aspirasi/{aspirasi}', [AdminAspirasiController::class, 'update'])->name('admin.aspirasi.update');
+        
+        Route::resource('/admin/kategori', \App\Http\Controllers\Admin\KategoriController::class)->names([
+            'index' => 'admin.kategori.index',
+            'create' => 'admin.kategori.create',
+            'store' => 'admin.kategori.store',
+            'edit' => 'admin.kategori.edit',
+            'update' => 'admin.kategori.update',
+            'destroy' => 'admin.kategori.destroy',
+        ]);
+
+        Route::resource('/admin/siswa', \App\Http\Controllers\Admin\SiswaController::class)->names([
+            'index' => 'admin.siswa.index',
+            'create' => 'admin.siswa.create',
+            'store' => 'admin.siswa.store',
+            'edit' => 'admin.siswa.edit',
+            'update' => 'admin.siswa.update',
+            'destroy' => 'admin.siswa.destroy',
+        ]);
     });
 });

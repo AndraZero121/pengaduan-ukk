@@ -48,7 +48,7 @@
 ## 4. Algoritma Pengelolaan & Tindak Lanjut (Admin)
 
 1. Mulai
-2. Admin mengakses "Dashboard Admin".
+2. Admin mengakses "Dashboard Admin" (Halaman Laporan).
 3. Sistem menampilkan daftar seluruh laporan (Pengaduan & Aspirasi) dari semua siswa.
 4. Admin dapat melakukan filter berdasarkan "Tipe" (Pengaduan/Aspirasi), "Status", atau "Kategori".
 5. Admin dapat mencari laporan spesifik dengan memasukkan "NIS" atau "Nama Siswa".
@@ -70,10 +70,10 @@
 7. Akses ke halaman Dashboard ditutup kembali hingga pengguna login lagi.
 8. Selesai
 
-## 6. Algoritma Pengarsipan Otomatis (Scheduler)
+## 6. Algoritma Pengarsipan Otomatis (Laporan Scheduler)
 
 1. Mulai
-2. Sistem menjalankan "Task Scheduler" secara berkala.
+2. Sistem menjalankan "Task Scheduler" secara berkala untuk pengarsipan laporan.
 3. Sistem mencari data pada tabel "aspirasi" dengan kriteria: Status "Selesai" dan waktu update > 30 hari.
 4. Jika ditemukan, sistem mengisi kolom "archived_at" dengan waktu saat ini.
 5. Selesai

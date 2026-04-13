@@ -19,7 +19,7 @@ class ProfanityFilter
 
         // English
         'fuck', 'shit', 'asshole', 'bitch', 'damn', 'crap',
-        'piss', 'bastard', 'dick', 'pussy', 'cock',
+        'piss', 'bastard', 'dick', 'pussy', 'cock', 'nigga',
     ];
 
     /**

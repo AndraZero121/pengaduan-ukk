@@ -6,28 +6,28 @@ use App\Models\Aspirasi;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 
-class ArchiveAspirasi extends Command
+class ArchiveLaporan extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'app:archive-aspirasi';
+    protected $signature = 'app:archive-laporan';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Archive completed aspirations older than 30 days';
+    protected $description = 'Arsip laporan yang sudah selesai lebih dari 30 hari';
 
     /**
      * Execute the console command.
      */
     public function handle()
     {
-        $this->info('Starting archive process...');
+        $this->info('Memulai proses pengarsipan...');
 
         $aspirasiToArchive = Aspirasi::query()
             ->where('status', 'Selesai')
@@ -38,18 +38,18 @@ class ArchiveAspirasi extends Command
         $count = $aspirasiToArchive->count();
 
         if ($count === 0) {
-            $this->info('No old completed aspirations found to archive.');
+            $this->info('Tidak ada laporan lama yang perlu diarsipkan.');
 
             return;
         }
 
-        $this->info("Found {$count} aspirations to archive.");
+        $this->info("Menemukan {$count} laporan untuk diarsipkan.");
 
         foreach ($aspirasiToArchive as $aspirasi) {
             $aspirasi->update(['archived_at' => now()]);
         }
 
-        Log::info("Archived {$count} old completed aspirations.");
-        $this->info('Archive process completed successfully.');
+        Log::info("Mengarsipkan {$count} laporan lama yang sudah selesai.");
+        $this->info('Proses pengarsipan selesai dengan sukses.');
     }
 }

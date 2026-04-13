@@ -14,10 +14,12 @@ class AdminAspirasiController extends Controller
 
     public function index(Request $request)
     {
+        // Membatasi akses controller ini (hanya untuk admin)
         if (Gate::denies('admin')) {
             abort(403);
         }
 
+        // Mengambil data Aspirasi dengan kategori dan input aspirasi dari user (siswa)
         $query = Aspirasi::query()->with(['inputAspirasi.siswa.user', 'kategori']);
 
         if ($request->filled('status')) {
@@ -34,6 +36,7 @@ class AdminAspirasiController extends Controller
             $query->where('id_kategori', $request->integer('id_kategori'));
         }
 
+        // Arsip
         if ($request->filled('archived')) {
             $archived = $request->string('archived')->toString();
             if ($archived === 'yes') {
@@ -42,7 +45,7 @@ class AdminAspirasiController extends Controller
                 $query->whereNull('archived_at');
             }
         }
-
+         // Fitur search
         $search = $request->string('search')->toString();
         if ($search !== '') {
             $query->whereHas('inputAspirasi.siswa', function ($builder) use ($search): void {
